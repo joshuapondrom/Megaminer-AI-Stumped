@@ -61,16 +61,15 @@ void AI::ended(bool won, const std::string& reason)
 /// <returns>Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.</returns>
 bool AI::run_turn()
 {
+  std::cout << "My turn " << game->current_turn << std::endl;
   const auto beaver = random_element(player->beavers);
-  //std::cout << "beaver id: " << beaver->id << std::endl;
-  //if(!player->lodges.empty()){
+  
+  if(game->current_turn == 1)
     beaver->build_lodge();
-  //}
-  if(beaver->moves > 2){
-    if(beaver->tile->tile_north != nullptr){
-      beaver->move(beaver->tile->tile_north); 
-    }
-  }    
+
+
+
+
   return true;
 
 
