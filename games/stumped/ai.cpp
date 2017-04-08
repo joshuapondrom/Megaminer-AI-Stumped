@@ -61,6 +61,21 @@ void AI::ended(bool won, const std::string& reason)
 /// <returns>Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.</returns>
 bool AI::run_turn()
 {
+  const auto beaver = random_element(player->beavers);
+  //std::cout << "beaver id: " << beaver->id << std::endl;
+  //if(!player->lodges.empty()){
+    beaver->build_lodge();
+  //}
+  if(beaver->moves > 2){
+    if(beaver->tile->tile_north != nullptr){
+      beaver->move(beaver->tile->tile_north); 
+    }
+  }    
+  return true;
+
+
+
+
     // This is your Stumped ShellAI
     // ShellAI is intended to be a simple AI that does everything possible in the game, but plays the game very poorly
     // This example code does the following:
@@ -68,7 +83,7 @@ bool AI::run_turn()
     // 2. tries to move the beaver
     // 3. tries to do one of the 5 actions on it
     // 4. Grabs a lodge and tries to recruit a new beaver
-
+    /*
     // First let's do a simple print statement telling us what turn we are on
     std::cout << "My turn " << game->current_turn << std::endl;
 
@@ -284,7 +299,7 @@ bool AI::run_turn()
     }
 
     std::cout << "Done with our turn" << std::endl;
-    return true;
+ */
 }
 
 /// A very basic path finding algorithm (Breadth First Search) that when given a starting Tile, will return a valid path to the goal Tile.
