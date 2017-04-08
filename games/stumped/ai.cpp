@@ -61,21 +61,13 @@ void AI::ended(bool won, const std::string& reason)
 /// <returns>Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.</returns>
 bool AI::run_turn()
 {
+  //please work :^(
   const auto beaver = random_element(player->beavers);
-  //std::cout << "beaver id: " << beaver->id << std::endl;
-  //if(!player->lodges.empty()){
-    beaver->build_lodge();
-  //}
-  if(beaver->moves > 2){
-    if(beaver->tile->tile_north != nullptr){
-      beaver->move(beaver->tile->tile_north); 
-    }
-  }    
+  if(beaver->moves > 2)
+    if(beaver->tile->tile_north != nullptr)
+      beaver->move(beaver->tile->tile_north);
   return true;
-
-
-
-
+  
     // This is your Stumped ShellAI
     // ShellAI is intended to be a simple AI that does everything possible in the game, but plays the game very poorly
     // This example code does the following:
