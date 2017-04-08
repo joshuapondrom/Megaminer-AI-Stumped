@@ -85,18 +85,22 @@ bool AI::run_turn()
        if(c_jobs->title == "Basic")
          b_jobs = c_jobs;
     }
-    b_jobs->recruit(c_lodges);
+    if(c_lodges == nullptr)
+      b_jobs->recruit(c_lodges);
   } 
 
   for( auto c_beaver : player->beavers ){
     if(game->current_turn == 0 || game->current_turn == 1)
       c_beaver->build_lodge();
 
-    if(c_beaver)
-      if(c_beaver->moves > 2)
-        if(c_beaver->tile->tile_north->is_pathable())
-          c_beaver->move(c_beaver->tile->tile_north);
-        
+    if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_north->is_pathable())
+          c_beaver->move(c_beaver->tile->tile_north); 
+    else if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_west->is_pathable())
+          c_beaver->move(c_beaver->tile->tile_west);
+    else if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_south->is_pathable())
+          c_beaver->move(c_beaver->tile->tile_south);
+    else if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_east->is_pathable())
+          c_beaver->move(c_beaver->tile->tile_east);
   }
   
 
