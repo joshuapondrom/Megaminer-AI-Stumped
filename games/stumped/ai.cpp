@@ -24,7 +24,7 @@ namespace stumped
 std::string AI::get_name() const
 {
     // REPLACE WITH YOUR TEAM NAME!
-    return "Chau-Is-Late";
+    return "Chau-Is-Latei";
 }
 
 /// <summary>
@@ -62,12 +62,16 @@ void AI::ended(bool won, const std::string& reason)
 bool AI::run_turn()
 {
   std::cout << "My turn " << game->current_turn << std::endl;
-  const auto beaver = random_element(player->beavers);
+  auto beaver = random_element(player->beavers);
   
   if(game->current_turn == 1)
     beaver->build_lodge();
 
-
+  if(beaver){
+   if(beaver->moves > 2)
+     if(beaver->tile->tile_north->is_pathable())
+       beaver->move(beaver->tile->tile_north);
+  }
 
 
   return true;
