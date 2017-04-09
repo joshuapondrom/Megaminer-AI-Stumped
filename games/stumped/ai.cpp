@@ -102,22 +102,25 @@ bool AI::run_turn()
 {
   std::cout << "Turn: " << game->current_turn << std::endl;
   //Goes through lodges, spawns fighters while less than 10 beavers
-  for( auto c_lodges : player->lodges ){
-    std::cout << " Selecting a lodge" << std::endl;
-    Job c_job;    
-    for( auto c_jobs : game->jobs ){
-      if(c_jobs->title == "Fighter"){
-        c_job = c_jobs;
+  if( game->free_beavers_count > 0 ){
+    for( auto c_lodges : player->lodges ){
+      std::cout << " Selecting a lodge" << std::endl;
+      Job c_job;    
+      for( auto c_jobs : game->jobs ){
+        if(c_jobs->title == "Fighter"){
+          c_job = c_jobs;
+        }
       }
-    }
-    if(c_lodges->beaver == nullptr){
-      if((player->beavers).size() < 10){
-        std::cout << "  Creating a " << c_job->title << std::endl;
-        c_job->recruit(c_lodges);
+      int count = (player->beavers).size();
+      if(c_lodges->beaver == nullptr){
+        if(player->beavers.size() < game->free_beavers_count){
+          std::cout << "  Creating a " << c_job->title << std::endl;
+          c_job->recruit(c_lodges);
+        }
       }
-    }
-  } 
-  
+    } 
+  }
+
   //Gives a move to all beavers
   for( auto c_beaver : player->beavers ){
     std::cout << " Selecting a beaver of type " << c_beaver->job->title << std::endl;
@@ -132,7 +135,7 @@ bool AI::run_turn()
         //auto c_path_lodge = find_path(c_beaver->tile, target_lodge);
         auto c_path_lodge = shortest_path(c_beaver->tile, player->opponent->lodges);
         std::cout << "  Shortest path to lodge(s)" << std::endl;
-        auto target_lodge = c_path_lodge.back();
+        //auto target_lodge = c_path_lodge.back();
         std::cout << "  Lodge targeted" << std::endl;
         auto neighbors = c_beaver->tile->get_neighbors();
 	for(const auto& neighbor : neighbors){
@@ -143,7 +146,7 @@ bool AI::run_turn()
 	    }
 	  }
 	  if(c_beaver->actions != 0){
-	    if(neighbor == target_lodge){
+	    if(neighbor->lodge_owner == player->opponent){
               std::cout << "   Destroying a lodge pre-move" << std::endl;
 	      if(c_beaver->branches == 0){
 		c_beaver->pickup(neighbor,"branch",0);
@@ -156,7 +159,7 @@ bool AI::run_turn()
 	    }
           }
         }
-	if(c_path_lodge.size() > 1){
+	if(c_path_lodge.size() > 1 && c_path_lodge.front()->beaver == nullptr && c_path_lodge.front()->lodge_owner != player){
 	  if(!((c_path_lodge.front()->flow_direction == "South" && c_path_lodge.front()->tile_south == c_beaver->tile)||
 	  (c_path_lodge.front()->flow_direction == "West" && c_path_lodge.front()->tile_west == c_beaver->tile)||
 	  (c_path_lodge.front()->flow_direction == "North" && c_path_lodge.front()->tile_north == c_beaver->tile)||
@@ -174,7 +177,7 @@ bool AI::run_turn()
 	    }
 	  }
 	  if(c_beaver->actions != 0){
-	    if(neighbor == target_lodge){
+	    if(neighbor->lodge_owner == player->opponent){
               std::cout << "   Destroying a lodge post-move" << std::endl;
 	      if(c_beaver->branches == 0){
 		c_beaver->pickup(neighbor,"branch",0);
@@ -232,7 +235,31 @@ bool AI::run_turn()
       }
     } 
     else{
-     
+      if(c_beaver->tile->lodge_owner == player){
+        if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_north != nullptr && c_beaver->tile->tile_north->is_pathable())
+           c_beaver->move(c_beaver->tile->tile_north); 
+        else if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_west != nullptr && c_beaver->tile->tile_west->is_pathable())
+           c_beaver->move(c_beaver->tile->tile_west);
+        else if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_south != nullptr && c_beaver->tile->tile_south->is_pathable())
+           c_beaver->move(c_beaver->tile->tile_south);
+        else if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_east != nullptr && c_beaver->tile->tile_east->is_pathable())
+           c_beaver->move(c_beaver->tile->tile_east);
+      }
+      int cost_of = ceil(pow(game->lodge_cost_constant ,  player->lodges.size()));
+      if((c_beaver->branches + c_beaver->tile->branches) >  cost_of && c_beaver->tile->lodge_owner == nullptr){
+        c_beaver->build_lodge();
+      } 
+      std::vector<Tile> trees = get_spawners();
+      std::vector<Tile> path_tree = shortest_path(c_beaver->tile, trees);
+      if(c_beaver->moves > 2 && path_tree.size() > 1){
+        c_beaver->move(path_tree.front());
+      }
+      if(c_beaver->actions > 0 && path_tree.size() == 1 && c_beaver->branches < 3){
+        c_beaver->harvest((path_tree.front())->spawner);
+      }
+      if(c_beaver->actions > 0 && c_beaver->branches == 3){
+        c_beaver->drop(c_beaver->tile,"branches",0);
+      }
      /* dumb code
      std::cout<<"  Simple move" <<std::endl;
      if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_north != nullptr && c_beaver->tile->tile_north->is_pathable())
