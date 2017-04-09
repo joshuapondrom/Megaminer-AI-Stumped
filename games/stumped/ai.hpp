@@ -18,6 +18,7 @@
 #include "../../joueur/src/attr_wrapper.hpp"
 
 // You can add additional #includes here
+#include <cmath>
 
 namespace cpp_client
 {
@@ -86,6 +87,10 @@ public:
 /// <param name="goal">the goal Tile</param>
 /// <return>A List of Tiles representing the path, the the first element being a valid adjacent Tile to the start, and the last element being the goal. Or an empty list if no path found.</return>
 std::vector<Tile> find_path(const Tile& start, const Tile& goal);
+
+//My functions
+std::vector<Tile> shortest_path(const Tile& a,const std::vector<Tile>& b);
+std::vector<Tile> get_spawners();
 
     template<class Item>
     Item random_element(std::vector<Item> container);
