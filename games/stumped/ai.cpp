@@ -102,7 +102,7 @@ bool AI::run_turn()
 {
   std::cout << "Turn: " << game->current_turn << std::endl;
   //Goes through lodges, spawns fighters while less than 10 beavers
-  if( game->free_beavers_count > 0 ){
+  if((player->beavers.size() + player->lodges.size()) <  game->free_beavers_count){
     for( auto c_lodges : player->lodges ){
       std::cout << " Selecting a lodge" << std::endl;
       Job c_job;    
@@ -111,7 +111,6 @@ bool AI::run_turn()
           c_job = c_jobs;
         }
       }
-      int count = (player->beavers).size();
       if(c_lodges->beaver == nullptr){
         if(player->beavers.size() < game->free_beavers_count){
           std::cout << "  Creating a " << c_job->title << std::endl;
