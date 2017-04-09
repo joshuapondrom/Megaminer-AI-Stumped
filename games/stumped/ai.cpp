@@ -75,7 +75,7 @@ bool AI::run_turn()
        beaver->move(beaver->tile->tile_north);
   }
   ----------------------------------------------------*/
-  
+  	
   
 
   for( auto c_lodges : player->lodges ){
@@ -102,7 +102,28 @@ bool AI::run_turn()
             if(player->opponent->lodges.size() != 0){
 	      auto target_lodge = (player->opponent->lodges).front();
               auto c_path_lodge = find_path(c_beaver->tile, target_lodge);
-              if(c_beaver)
+              auto neighbors = c_beaver->tile->get_neighbors();
+
+                for(const auto& neighbor : neighbors){
+                  if(c_beaver->actions != 0){
+                    std::cout<<"action available !!!" <<std::endl;
+                    if(neighbor->beaver && neighbor->beaver->owner == player->opponent&& neighbor->beaver->recruited){
+                      std::cout<<"should attack adjason"<<std::endl;
+                      c_beaver->attack(neighbor->beaver);
+                    }
+                  }
+                  if(c_beaver->actions != 0)
+                    if(neighbor == target_lodge){
+                      if(c_beaver->branches == 0)
+                        c_beaver->pickup(neighbor,"branch",0);
+                      else
+                        if(c_beaver->actions != 0)
+                          c_beaver->drop(c_beaver->tile,"branch",0);
+                    }
+
+            }
+
+	      //if(c_beaver)
                 if(c_path_lodge.size() > 1){
                   if(!((c_path_lodge.front()->flow_direction == "South" && c_path_lodge.front()->tile_south == c_beaver->tile)||
                   (c_path_lodge.front()->flow_direction == "West" && c_path_lodge.front()->tile_west == c_beaver->tile)||
@@ -110,31 +131,51 @@ bool AI::run_turn()
                   (c_path_lodge.front()->flow_direction == "East" && c_path_lodge.front()->tile_east == c_beaver->tile)))
                   c_beaver->move(c_path_lodge.front());
                 }
+                neighbors = c_beaver->tile->get_neighbors();
+            
+		for(const auto& neighbor : neighbors){
+                  if(c_beaver->actions != 0){
+                    std::cout<<"action available !!!" <<std::endl;                     
+		    if(neighbor->beaver && neighbor->beaver->owner == player->opponent&& neighbor->beaver->recruited){
+                      std::cout<<"should attack adjason"<<std::endl;
+                      c_beaver->attack(neighbor->beaver);
+                    }
+                  }
+                  if(c_beaver->actions != 0)
+		    if(neighbor == target_lodge){
+                      if(c_beaver->branches == 0)
+                        c_beaver->pickup(neighbor,"branch",0);
+                      else
+                        if(c_beaver->actions != 0)
+	                  c_beaver->drop(c_beaver->tile,"branch",0);
+		    }
+
+            }
 
 	    }
 	    else{
 	      auto target = (player->opponent->beavers).front()->tile;
               auto c_path = find_path(c_beaver->tile, target);
               auto neighbors = c_beaver->tile->get_neighbors();
-               
-              if(c_beaver)
-                if(c_path.size() > 1){
+              for(auto& neighbor : neighbors)
+		if(c_beaver->actions != 0)
+  		  if(neighbor->beaver && neighbor->beaver->owner == player->opponent && neighbor->beaver->recruited)
+    		    c_beaver->attack(neighbor->beaver);
+              //if(c_beaver)
+                if(c_path.size() > 1)
                   if(!((c_path.front()->flow_direction == "South" && c_path.front()->tile_south == c_beaver->tile)||
                     (c_path.front()->flow_direction == "West" && c_path.front()->tile_west == c_beaver->tile)||
                     (c_path.front()->flow_direction == "North" && c_path.front()->tile_north == c_beaver->tile)||
                     (c_path.front()->flow_direction == "East" && c_path.front()->tile_east == c_beaver->tile)))
-                  c_beaver->move(c_path.front());
-}
-                  else{
-                    for(const auto& neighbor : neighbors){
+                    c_beaver->move(c_path.front());
+		  neighbors = c_beaver->tile->get_neighbors();
+                    for(const auto& neighbor : neighbors)
                       if(neighbor->beaver && neighbor->beaver->owner == player->opponent)
-                        c_beaver->attack(neighbor->beaver);
-                    }
-                  }
-                }  		  
+                        if(c_beaver->actions != 0)
+                          c_beaver->attack(neighbor->beaver);
             }
 		  
-   
+  } 
    else{
     std::cout<<"basic move" <<std::endl;
     if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_north != nullptr && c_beaver->tile->tile_north->is_pathable())
