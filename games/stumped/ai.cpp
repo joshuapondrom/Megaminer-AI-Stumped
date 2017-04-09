@@ -28,7 +28,33 @@ namespace stumped
 /////////////
 //Functions//
 /////////////
-//std::vector<Tile>
+std::vector<Tile> AI::get_spawners(){
+  std::vector<Tile> our_spawners;
+  for(auto i: game->tiles){
+    if(i->spawner != NULL && i->spawner->type == "branches"){
+      our_spawners.push_back(i);
+    }
+  }
+  return our_spawners;
+}
+
+std::vector<Tile> AI::shortest_path(const Tile& a,const std::vector<Tile>& b){
+  if(b.size() == 0){
+    std::cout << "YOUR CODE IS BROKEN PLS FIX" << std::endl;
+  }
+  if(b.size() == 1){
+    return find_path(a,b.front());
+  }
+  int low = 2000000;
+  std::vector<Tile> our_path;
+  for(auto i: b){
+    if(find_path(a,i).size() < low){
+      low = find_path(a,i).size();
+      our_path =  find_path(a,i);
+    }
+  }
+  return our_path;
+}
 
 /// <summary>
 /// This returns your AI's name to the game server.
@@ -102,8 +128,12 @@ bool AI::run_turn()
     if(c_beaver->job->title == "Fighter"){
       if(player->opponent->lodges.size() != 0){
         std::cout << "  Going after lodge(s)" << std::endl;
-        auto target_lodge = (player->opponent->lodges).front();
-        auto c_path_lodge = find_path(c_beaver->tile, target_lodge);
+        //auto target_lodge = (player->opponent->lodges).front();
+        //auto c_path_lodge = find_path(c_beaver->tile, target_lodge);
+        auto c_path_lodge = shortest_path(c_beaver->tile, player->opponent->lodges);
+        std::cout << "  Shortest path to lodge(s)" << std::endl;
+        auto target_lodge = c_path_lodge.back();
+        std::cout << "  Lodge targeted" << std::endl;
         auto neighbors = c_beaver->tile->get_neighbors();
 	for(const auto& neighbor : neighbors){
 	  if(c_beaver->actions != 0){
@@ -158,37 +188,41 @@ bool AI::run_turn()
           }
         }
       }
-      else{
+      else if(player->opponent->beavers.size() != 0){
+        std::vector<Tile> beavertiles;
+        for(auto i: player->opponent->beavers){
+          beavertiles.push_back(i->tile);
+        }
         std::cout << "  Going after beavers" << std::endl;
-        auto target = (player->opponent->beavers).front()->tile;
+        //auto target = (player->opponent->beavers).front()->tile;
         std::cout << "   Getting target" << std::endl;
-        auto c_path = find_path(c_beaver->tile, target);
+        //auto c_path = find_path(c_beaver->tile, target);
+        auto c_path = shortest_path(c_beaver->tile, beavertiles);
+        std::cout << "   Acquired target" << std::endl;
+        //Beaver target = c_path.back()->beaver;
         std::cout << "   Getting path" << std::endl;
         auto neighbors = c_beaver->tile->get_neighbors();
         std::cout << "   Getting neighbors" << std::endl;
         for(auto& neighbor : neighbors){
-          std::cout<<"inforloop" << std::endl; //TEMP
           if(c_beaver->actions != 0){
-            std::cout<<"inforloop2" << std::endl; //TEMP
 	    if(neighbor->beaver && neighbor->beaver->owner == player->opponent && neighbor->beaver->recruited){
-              std::cout<<"inforloop3" << std::endl; //TEMP
               std::cout << "    Attacking adjacent pre-move" << std::endl;
 	      c_beaver->attack(neighbor->beaver);
             }
           }
-          std::cout<<"outforloop" << std::endl; //TEMP
         }
 	if(c_path.size() > 1){
 	  if(!((c_path.front()->flow_direction == "South" && c_path.front()->tile_south == c_beaver->tile)||
 	    (c_path.front()->flow_direction == "West" && c_path.front()->tile_west == c_beaver->tile)||
 	    (c_path.front()->flow_direction == "North" && c_path.front()->tile_north == c_beaver->tile)||
-	    (c_path.front()->flow_direction == "East" && c_path.front()->tile_east == c_beaver->tile)))
+	    (c_path.front()->flow_direction == "East" && c_path.front()->tile_east == c_beaver->tile))){
             std::cout << "    Moving the beaver" << std::endl;
 	    c_beaver->move(c_path.front());
+          }
         }
         neighbors = c_beaver->tile->get_neighbors();
 	for(const auto& neighbor : neighbors){
-	  if(neighbor->beaver && neighbor->beaver->owner == player->opponent){
+	  if(neighbor->beaver && neighbor->beaver->owner == player->opponent && neighbor->beaver->recruited){
             if(c_beaver->actions != 0){
               std::cout << "    Attacking adjacent post-move" << std::endl;
               c_beaver->attack(neighbor->beaver);
@@ -198,6 +232,8 @@ bool AI::run_turn()
       }
     } 
     else{
+     
+     /* dumb code
      std::cout<<"  Simple move" <<std::endl;
      if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_north != nullptr && c_beaver->tile->tile_north->is_pathable())
            c_beaver->move(c_beaver->tile->tile_north); 
@@ -207,6 +243,7 @@ bool AI::run_turn()
            c_beaver->move(c_beaver->tile->tile_south);
      else if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_east != nullptr && c_beaver->tile->tile_east->is_pathable())
            c_beaver->move(c_beaver->tile->tile_east);
+    */
     }
   }
   //end of turn
