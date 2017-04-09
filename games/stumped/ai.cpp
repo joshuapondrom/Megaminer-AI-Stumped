@@ -10,9 +10,24 @@ namespace cpp_client
 namespace stumped
 {
 
-//////////////////
-//Josh functions//
-//////////////////
+/////////
+//To do//
+/////////
+//Bugs
+//----
+//Segfault sometimes?
+//Beavers going upstream
+//
+//Features
+//--------
+//Get closest function
+//Give defualt beaver a purpose
+//Possibly defense
+/////////
+
+/////////////
+//Functions//
+/////////////
 //std::vector<Tile>
 
 /// <summary>
@@ -59,96 +74,131 @@ void AI::ended(bool won, const std::string& reason)
 /// <returns>Represents if you want to end your turn. True means end your turn, False means to keep your turn going and re-call this function.</returns>
 bool AI::run_turn()
 {
-  std::cout << "My turn " << game->current_turn << std::endl;
+  std::cout << "Turn: " << game->current_turn << std::endl;
   //Goes through lodges, spawns fighters while less than 10 beavers
   for( auto c_lodges : player->lodges ){
-    Job b_jobs;    
+    std::cout << " Selecting a lodge" << std::endl;
+    Job c_job;    
     for( auto c_jobs : game->jobs ){
-       if(c_jobs->title == "Fighter")
-         b_jobs = c_jobs;
+      if(c_jobs->title == "Fighter"){
+        c_job = c_jobs;
+      }
     }
     if(c_lodges->beaver == nullptr){
-      std::cout<<"created fighter"<<std::endl;
-      if((player->beavers).size() < 10)
-        b_jobs->recruit(c_lodges);
+      if((player->beavers).size() < 10){
+        std::cout << "  Creating a " << c_job->title << std::endl;
+        c_job->recruit(c_lodges);
+      }
     }
   } 
   
   //Gives a move to all beavers
   for( auto c_beaver : player->beavers ){
-    if(game->current_turn == 0 || game->current_turn == 1)
+    std::cout << " Selecting a beaver of type " << c_beaver->job->title << std::endl;
+    if(game->current_turn == 0 || game->current_turn == 1){
+      std::cout << "  Building initial lodge" << std::endl; 
       c_beaver->build_lodge();
+    }
     if(c_beaver->job->title == "Fighter"){
-      std::cout <<"fighter move" <<std::endl;
       if(player->opponent->lodges.size() != 0){
+        std::cout << "  Going after lodge(s)" << std::endl;
         auto target_lodge = (player->opponent->lodges).front();
         auto c_path_lodge = find_path(c_beaver->tile, target_lodge);
         auto neighbors = c_beaver->tile->get_neighbors();
 	for(const auto& neighbor : neighbors){
 	  if(c_beaver->actions != 0){
-	    std::cout<<"action available !!!" <<std::endl;
 	    if(neighbor->beaver && neighbor->beaver->owner == player->opponent&& neighbor->beaver->recruited){
-	      std::cout<<"should attack adjason"<<std::endl;
+              std::cout << "   Attacking adjacent pre-move" << std::endl;
 	      c_beaver->attack(neighbor->beaver);
 	    }
 	  }
-	  if(c_beaver->actions != 0)
+	  if(c_beaver->actions != 0){
 	    if(neighbor == target_lodge){
-	      if(c_beaver->branches == 0)
+              std::cout << "   Destroying a lodge pre-move" << std::endl;
+	      if(c_beaver->branches == 0){
 		c_beaver->pickup(neighbor,"branch",0);
-	      else
-		if(c_beaver->actions != 0)
+              }
+	      else{
+		if(c_beaver->actions != 0){
 		  c_beaver->drop(c_beaver->tile,"branch",0);
+                }
+              }
 	    }
+          }
         }
-	if(c_path_lodge.size() > 1)
+	if(c_path_lodge.size() > 1){
 	  if(!((c_path_lodge.front()->flow_direction == "South" && c_path_lodge.front()->tile_south == c_beaver->tile)||
 	  (c_path_lodge.front()->flow_direction == "West" && c_path_lodge.front()->tile_west == c_beaver->tile)||
 	  (c_path_lodge.front()->flow_direction == "North" && c_path_lodge.front()->tile_north == c_beaver->tile)||
-	  (c_path_lodge.front()->flow_direction == "East" && c_path_lodge.front()->tile_east == c_beaver->tile)))
+	  (c_path_lodge.front()->flow_direction == "East" && c_path_lodge.front()->tile_east == c_beaver->tile))){
+            std::cout << "   Moving the beaver" << std::endl;
 	    c_beaver->move(c_path_lodge.front());
+          }
+        }
 	neighbors = c_beaver->tile->get_neighbors();
 	for(const auto& neighbor : neighbors){
 	  if(c_beaver->actions != 0){
-	    std::cout<<"action available !!!" <<std::endl;                     
 	    if(neighbor->beaver && neighbor->beaver->owner == player->opponent&& neighbor->beaver->recruited){
-	      std::cout<<"should attack adjason"<<std::endl;
+              std::cout << "   Attacking adjacent post-move" << std::endl;
 	      c_beaver->attack(neighbor->beaver);
 	    }
 	  }
-	  if(c_beaver->actions != 0)
+	  if(c_beaver->actions != 0){
 	    if(neighbor == target_lodge){
-	      if(c_beaver->branches == 0)
+              std::cout << "   Destroying a lodge post-move" << std::endl;
+	      if(c_beaver->branches == 0){
 		c_beaver->pickup(neighbor,"branch",0);
-	      else
-		if(c_beaver->actions != 0)
+              }
+	      else{
+		if(c_beaver->actions != 0){
 		  c_beaver->drop(c_beaver->tile,"branch",0);
+                }
+              }
 	    }
+          }
         }
-     }
+      }
       else{
+        std::cout << "  Going after beavers" << std::endl;
         auto target = (player->opponent->beavers).front()->tile;
+        std::cout << "   Getting target" << std::endl;
         auto c_path = find_path(c_beaver->tile, target);
+        std::cout << "   Getting path" << std::endl;
         auto neighbors = c_beaver->tile->get_neighbors();
-        for(auto& neighbor : neighbors)
-          if(c_beaver->actions != 0)
-	    if(neighbor->beaver && neighbor->beaver->owner == player->opponent && neighbor->beaver->recruited)
+        std::cout << "   Getting neighbors" << std::endl;
+        for(auto& neighbor : neighbors){
+          std::cout<<"inforloop" << std::endl; //TEMP
+          if(c_beaver->actions != 0){
+            std::cout<<"inforloop2" << std::endl; //TEMP
+	    if(neighbor->beaver && neighbor->beaver->owner == player->opponent && neighbor->beaver->recruited){
+              std::cout<<"inforloop3" << std::endl; //TEMP
+              std::cout << "    Attacking adjacent pre-move" << std::endl;
 	      c_beaver->attack(neighbor->beaver);
-	  if(c_path.size() > 1)
-	    if(!((c_path.front()->flow_direction == "South" && c_path.front()->tile_south == c_beaver->tile)||
-	      (c_path.front()->flow_direction == "West" && c_path.front()->tile_west == c_beaver->tile)||
-	      (c_path.front()->flow_direction == "North" && c_path.front()->tile_north == c_beaver->tile)||
-	      (c_path.front()->flow_direction == "East" && c_path.front()->tile_east == c_beaver->tile)))
-	      c_beaver->move(c_path.front());
-          neighbors = c_beaver->tile->get_neighbors();
-	  for(const auto& neighbor : neighbors)
-	    if(neighbor->beaver && neighbor->beaver->owner == player->opponent)
-              if(c_beaver->actions != 0)
-                c_beaver->attack(neighbor->beaver);
+            }
+          }
+          std::cout<<"outforloop" << std::endl; //TEMP
+        }
+	if(c_path.size() > 1){
+	  if(!((c_path.front()->flow_direction == "South" && c_path.front()->tile_south == c_beaver->tile)||
+	    (c_path.front()->flow_direction == "West" && c_path.front()->tile_west == c_beaver->tile)||
+	    (c_path.front()->flow_direction == "North" && c_path.front()->tile_north == c_beaver->tile)||
+	    (c_path.front()->flow_direction == "East" && c_path.front()->tile_east == c_beaver->tile)))
+            std::cout << "    Moving the beaver" << std::endl;
+	    c_beaver->move(c_path.front());
+        }
+        neighbors = c_beaver->tile->get_neighbors();
+	for(const auto& neighbor : neighbors){
+	  if(neighbor->beaver && neighbor->beaver->owner == player->opponent){
+            if(c_beaver->actions != 0){
+              std::cout << "    Attacking adjacent post-move" << std::endl;
+              c_beaver->attack(neighbor->beaver);
+            }
+          }
+        }
       }
     } 
     else{
-     std::cout<<"basic move" <<std::endl;
+     std::cout<<"  Simple move" <<std::endl;
      if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_north != nullptr && c_beaver->tile->tile_north->is_pathable())
            c_beaver->move(c_beaver->tile->tile_north); 
      else if(c_beaver&& c_beaver->moves > 2 && c_beaver->tile->tile_west != nullptr && c_beaver->tile->tile_west->is_pathable())
